@@ -7,13 +7,13 @@ import time
 import logging
 from typing import Optional
 
-try:
-    import nxt.locator
-    from nxt.motor import Motor, PORT_B, PORT_C
-    from nxt.sensor import Ultrasonic, Port
-except ImportError:
-    print("Warning: nxt-python not installed. Install with: pip install nxt-python")
-    raise
+# try:
+import nxt.locator
+import nxt.motor
+import nxt.sensor
+# except ImportError:
+#     print("Warning: nxt-python not installed. Install with: pip install nxt-python")
+#     raise
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -34,10 +34,10 @@ class NXTController:
         self.motor_ports = motor_ports
         self.sensor_port = sensor_port
         self.power = power
-        self.brick: Optional[nxt.locator.BrickSocket] = None
-        self.left_motor: Optional[Motor] = None
-        self.right_motor: Optional[Motor] = None
-        self.ultrasonic: Optional[Ultrasonic] = None
+        self.brick = None
+        self.left_motor = None
+        self.right_motor = None
+        self.ultrasonic = None
         self.lock = threading.Lock()
         self._connected = False
         
@@ -58,15 +58,17 @@ class NXTController:
                 logger.info(f"Connected to NXT: {self.brick.get_device_info()}")
                 
                 # Initialize motors
-                left_port = PORT_B if self.motor_ports[0].upper() == 'B' else PORT_C
-                right_port = PORT_C if self.motor_ports[1].upper() == 'C' else PORT_B
+                port_map = {'A': nxt.motor.Port.A, 'B': nxt.motor.Port.B, 'C': nxt.motor.Port.C}
+                left_port = port_map[self.motor_ports[0].upper()]
+                right_port = port_map[self.motor_ports[1].upper()]
                 
-                self.left_motor = Motor(self.brick, left_port)
-                self.right_motor = Motor(self.brick, right_port)
+                self.left_motor = self.brick.get_motor(left_port)
+                self.right_motor = self.brick.get_motor(right_port)
                 
                 # Initialize ultrasonic sensor
-                sensor_port_map = {1: Port.S1, 2: Port.S2, 3: Port.S3, 4: Port.S4}
-                self.ultrasonic = Ultrasonic(self.brick, sensor_port_map[self.sensor_port])
+                sensor_port_map = {1: nxt.sensor.Port.S1, 2: nxt.sensor.Port.S2, 3: nxt.sensor.Port.S3, 4: nxt.sensor.Port.S4}
+                sensor = self.brick.get_sensor(sensor_port_map[self.sensor_port], nxt.sensor.Type.LOWSPEED_9V)
+                self.ultrasonic = nxt.sensor.Ultrasonic(sensor)
                 
                 self._connected = True
                 logger.info("NXT motors and sensors initialized")
@@ -119,15 +121,16 @@ class NXTController:
                 return
             
             try:
+                # Run motors with power, 0 tacho_limit means run indefinitely
                 if left_power == 0:
                     self.left_motor.brake()
                 else:
-                    self.left_motor.run(power=left_power)
+                    self.left_motor.run(left_power, 0)
                 
                 if right_power == 0:
                     self.right_motor.brake()
                 else:
-                    self.right_motor.run(power=right_power)
+                    self.right_motor.run(right_power, 0)
                     
             except Exception as e:
                 logger.error(f"Motor control error: {e}")

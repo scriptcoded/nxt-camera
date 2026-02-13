@@ -6,13 +6,9 @@ import logging
 import time
 from flask import Flask, render_template, Response
 from flask_socketio import SocketIO, emit
-import eventlet
 
 from camera import Camera
 from nxt_controller import NXTController
-
-# Monkey patch for eventlet
-eventlet.monkey_patch()
 
 # Configure logging
 logging.basicConfig(
@@ -24,7 +20,7 @@ logger = logging.getLogger(__name__)
 # Initialize Flask app
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'nxt-camera-secret-key-change-in-production'
-socketio = SocketIO(app, async_mode='eventlet', cors_allowed_origins='*')
+socketio = SocketIO(app, async_mode='threading', cors_allowed_origins='*')
 
 # Initialize hardware
 camera = None
@@ -171,11 +167,11 @@ def distance_monitor():
                 if distance is not None:
                     socketio.emit('distance', {'value': distance})
             
-            eventlet.sleep(0.5)  # Poll every 500ms
+            time.sleep(0.5)  # Poll every 500ms
             
         except Exception as e:
             logger.error(f"Distance monitor error: {e}")
-            eventlet.sleep(1)
+            time.sleep(1)
 
 
 def cleanup():
