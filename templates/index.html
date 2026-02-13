@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NXT Camera Car</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdn.socket.io/4.6.0/socket.io.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <h1>🤖 NXT Camera Car</h1>
+            <div class="status-bar">
+                <span class="status" id="camera-status">
+                    <span class="indicator" id="camera-indicator"></span>
+                    Camera
+                </span>
+                <span class="status" id="nxt-status">
+                    <span class="indicator" id="nxt-indicator"></span>
+                    NXT
+                </span>
+                <span class="status" id="connection-status">
+                    <span class="indicator" id="connection-indicator"></span>
+                    Server
+                </span>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main>
+            <!-- Video Feed -->
+            <div class="video-container">
+                <img id="video-feed" src="{{ url_for('video_feed') }}" alt="Camera Feed">
+                <div class="video-overlay">
+                    <div class="distance-display">
+                        <div class="distance-label">Distance</div>
+                        <div class="distance-value" id="distance-value">--</div>
+                        <div class="distance-unit">cm</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Controls -->
+            <div class="controls-container">
+                <div class="controls-info">
+                    <p>🎮 Use <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> or arrow keys</p>
+                </div>
+                
+                <div class="controls-grid">
+                    <!-- Top row: Forward -->
+                    <div class="control-row">
+                        <button class="control-btn" id="btn-forward" data-direction="forward">
+                            <span class="arrow">▲</span>
+                            <span class="label">Forward</span>
+                        </button>
+                    </div>
+                    
+                    <!-- Middle row: Left, Stop, Right -->
+                    <div class="control-row">
+                        <button class="control-btn" id="btn-left" data-direction="left">
+                            <span class="arrow">◀</span>
+                            <span class="label">Left</span>
+                        </button>
+                        <button class="control-btn stop" id="btn-stop">
+                            <span class="arrow">■</span>
+                            <span class="label">Stop</span>
+                        </button>
+                        <button class="control-btn" id="btn-right" data-direction="right">
+                            <span class="arrow">▶</span>
+                            <span class="label">Right</span>
+                        </button>
+                    </div>
+                    
+                    <!-- Bottom row: Backward -->
+                    <div class="control-row">
+                        <button class="control-btn" id="btn-backward" data-direction="backward">
+                            <span class="arrow">▼</span>
+                            <span class="label">Backward</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer>
+            <p>LEGO Mindstorms NXT Camera Car • Press and hold to move</p>
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='controls.js') }}"></script>
+</body>
+</html>

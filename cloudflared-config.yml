@@ -1,0 +1,33 @@
+# Cloudflare Tunnel Configuration Template
+# Replace placeholders with your actual values
+#
+# This file should be placed at: ~/.cloudflared/config.yml
+# Or use setup_tunnel.sh to automatically configure
+
+# Your tunnel UUID (get from: cloudflared tunnel list)
+tunnel: YOUR_TUNNEL_ID_HERE
+
+# Path to tunnel credentials file
+credentials-file: /home/pi/.cloudflared/YOUR_TUNNEL_ID_HERE.json
+
+# Ingress rules define how traffic is routed
+ingress:
+  # Route your hostname to the local Flask app
+  - hostname: nxt-camera.yourdomain.com
+    service: http://localhost:5000
+    # Optional: Disable buffering for faster video streaming
+    originRequest:
+      noTLSVerify: false
+      disableChunkedEncoding: false
+  
+  # Catch-all rule (required as last rule)
+  - service: http_status:404
+
+# Optional: Logging configuration
+# loglevel: info  # Options: trace, debug, info, warn, error, fatal
+
+# Optional: Retry logic for origin connection
+# retries: 5
+
+# Optional: Connection settings
+# protocol: quic  # Options: auto, quic, http2, h2mux

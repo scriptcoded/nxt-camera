@@ -1,0 +1,38 @@
+# Python
+.env.local.env# Environment*.json.cloudflared/# Cloudflare*.log# LogsThumbs.db.DS_Store# OS*~*.swo*.swp.idea/.vscode/# IDE.webassets-cacheinstance/# Flaskbuild/dist/*.egg-info/ENV/env/venv/.Python*.so*$py.class*.py[cod]__pycache__/__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+venv/
+env/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Cloudflare
+.cloudflared/
+*.json
+
+# Environment
+.env
+.env.local
+
+# Temporary files
+*.tmp
+*.bak
