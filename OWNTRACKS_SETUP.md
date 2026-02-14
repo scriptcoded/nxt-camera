@@ -71,10 +71,13 @@ Back in OwnTracks Settings:
 
 4. Walk around with your iPhone - you should see:
    - **GPS indicator turns green** in the status bar at the top
-   - A map appear on the website
-   - A robot emoji (🤖) marking your location
+   - The map (right side of screen) shows your location
+   - A robot emoji (🤖) marking your location on the map
+   - Map automatically zooms to your position
    - Coordinates and accuracy displayed below the map
    - Battery percentage of your iPhone
+
+**Layout**: The web interface uses a split-screen design with the camera feed on the left and the map always visible on the right. On mobile devices, the layout stacks vertically.
 
 **Note**: The GPS indicator will turn red if no location updates are received for 2 minutes.
 
@@ -128,11 +131,16 @@ OwnTracks uses GPS which can drain battery. To optimize:
 2. iOS Settings → OwnTracks → **Low Power Mode** compatibility:
    - Background tracking may pause in Low Power Mode
 
-### Map Not Loading on Website
+### Map Not Loading or Showing Blank
 
-- Check browser console for JavaScript errors
-- Ensure you have internet connection (for map tiles)
-- Try refreshing the page
+The map is always visible on the right side of the screen (or below camera on mobile).
+
+**Solutions:**
+- Check browser console for JavaScript errors (F12 → Console)
+- Ensure you have internet connection (map tiles load from OpenStreetMap)
+- Try refreshing the page (Ctrl+F5 or Cmd+Shift+R)
+- Verify Leaflet.js library loaded (check Network tab in browser DevTools)
+- If map shows but no robot marker, GPS data hasn't been received yet (check GPS indicator)
 
 ## Advanced Configuration
 

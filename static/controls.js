@@ -95,18 +95,13 @@ function updateLocation(data) {
         return;
     }
     
-    const container = document.getElementById('map-container');
-    container.style.display = 'block';
-    
     // Initialize map if not already created
     if (!map) {
-        map = L.map('map').setView([data.lat, data.lon], 16);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors',
-            maxZoom: 19
-        }).addTo(map);
-        
-        // Add marker with custom icon
+        initializeMap();
+    }
+    
+    // Add or update marker
+    if (!marker) {
         const carIcon = L.divIcon({
             className: 'car-marker',
             html: '🤖',
@@ -116,8 +111,10 @@ function updateLocation(data) {
     } else {
         // Update existing marker position
         marker.setLatLng([data.lat, data.lon]);
-        map.setView([data.lat, data.lon]);
     }
+    
+    // Center map on robot location
+    map.setView([data.lat, data.lon], 16);
     
     // Update location info text
     document.getElementById('location-coords').textContent = 
@@ -288,6 +285,23 @@ document.querySelectorAll('.control-btn').forEach(button => {
     button.addEventListener('contextmenu', (e) => {
         e.preventDefault();
     });
+});
+
+// Initialize map with default view
+function initializeMap() {
+    if (!map) {
+        // Default center (will be updated when GPS data arrives)
+        map = L.map('map').setView([0, 0], 2);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors',
+            maxZoom: 19
+        }).addTo(map);
+    }
+}
+
+// Initialize map on page load
+document.addEventListener('DOMContentLoaded', () => {
+    initializeMap();
 });
 
 // Emergency stop on window blur (user switches tabs/apps)

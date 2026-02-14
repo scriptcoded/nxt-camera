@@ -1,18 +1,19 @@
 # 🤖 NXT Camera Car
 
-A web-based remote control system for a LEGO Mindstorms NXT robot car with live camera feed. Control your robot from anywhere in the world using a Raspberry Pi, USB camera, and Cloudflare Tunnels.
+A web-based remote control system for a LEGO Mindstorms NXT robot car with live camera feed and GPS tracking. Features a full-screen split-view interface with camera on the left and live map on the right. Control your robot from anywhere in the world using a Raspberry Pi, USB camera, and Cloudflare Tunnels.
 
 ## ✨ Features
 
+- **Split-Screen Layout**: Camera feed and GPS map side-by-side for maximum visibility
 - **Live Camera Streaming**: Real-time MJPEG video feed from USB camera
+- **Real-time GPS Tracking**: Always-visible map showing robot location via OwnTracks
 - **Responsive Controls**: Keyboard (WASD/arrows) and on-screen buttons
 - **Tank Drive Control**: Differential steering with two motors
 - **Distance Sensing**: Real-time ultrasonic sensor readings
-- **GPS Location Tracking**: Real-time map showing robot location via OwnTracks
 - **Status Indicators**: Visual connection status for Camera, NXT, GPS, and Server
 - **Low Latency**: WebSocket-based communication for responsive control
 - **Secure Remote Access**: Cloudflare Tunnels with Zero Trust authentication
-- **Mobile Friendly**: Touch-optimized controls for phones and tablets
+- **Mobile Friendly**: Touch-optimized responsive design for all screen sizes
 
 ## 🛠️ Hardware Requirements
 
@@ -196,11 +197,11 @@ The ultrasonic sensor reading appears in the top-right corner of the video feed,
 
 ### GPS Location Tracking
 
-The web interface shows a live map with the robot's location when using OwnTracks on an iPhone:
+The web interface features a **split-screen layout** with the camera feed on the left and a live map on the right:
 
 1. **Install OwnTracks** app on iPhone (free from App Store)
 2. **Configure** to send location to: `http://<pi-ip>:5000/api/location`
-3. **View Map** on the web interface showing real-time robot position
+3. **View** real-time robot position on the always-visible map
 
 📖 **See [OWNTRACKS_SETUP.md](OWNTRACKS_SETUP.md) for detailed setup instructions**
 
@@ -209,6 +210,7 @@ The map displays:
 - GPS coordinates
 - Location accuracy
 - iPhone battery level
+- World map (zooms to robot location when data received)
 
 **Status Monitoring**: The GPS indicator in the top status bar shows:
 - 🟢 Green: Location updates being received
