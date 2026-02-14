@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>NXT Camera Car</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://cdn.socket.io/4.6.0/socket.io.min.js"></script>
 </head>
 <body>
@@ -20,6 +21,10 @@
                 <span class="status" id="nxt-status">
                     <span class="indicator" id="nxt-indicator"></span>
                     NXT
+                </span>
+                <span class="status" id="gps-status">
+                    <span class="indicator" id="gps-indicator"></span>
+                    GPS
                 </span>
                 <span class="status" id="connection-status">
                     <span class="indicator" id="connection-indicator"></span>
@@ -39,6 +44,17 @@
                         <div class="distance-value" id="distance-value">--</div>
                         <div class="distance-unit">cm</div>
                     </div>
+                </div>
+            </div>
+
+            <!-- Location Map -->
+            <div class="map-container" id="map-container" style="display: none;">
+                <h3>📍 Robot Location</h3>
+                <div id="map"></div>
+                <div class="location-info">
+                    <span class="location-coords" id="location-coords">--</span>
+                    <span class="location-detail" id="location-accuracy"></span>
+                    <span class="location-detail" id="phone-battery"></span>
                 </div>
             </div>
 
@@ -90,6 +106,7 @@
         </footer>
     </div>
 
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="{{ url_for('static', filename='controls.js') }}"></script>
 </body>
 </html>

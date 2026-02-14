@@ -30,10 +30,19 @@ socket.on('distance', (data) => {
     updateDistance(data.value);
 });
 
+socket.on('location', (data) => {
+    updateLocation(data);
+});
+
 socket.on('error', (data) => {
     console.error('Server error:', data.message);
     showError(data.message);
 });
+
+// Map for location display
+let map = null;
+let marker = null;
+let gpsTimeout = null;
 
 // Update status indicators
 function updateConnectionStatus(connected) {
@@ -63,6 +72,15 @@ function updateNXTStatus(connected) {
     }
 }
 
+function updateGPSStatus(connected) {
+    const indicator = document.getElementById('gps-indicator');
+    if (connected) {
+        indicator.classList.add('connected');
+    } else {
+        indicator.classList.remove('connected');
+    }
+}
+
 function updateDistance(value) {
     const distanceValue = document.getElementById('distance-value');
     if (value !== null && value >= 0) {
@@ -70,6 +88,60 @@ function updateDistance(value) {
     } else {
         distanceValue.textContent = '--';
     }
+}
+
+function updateLocation(data) {
+    if (!data.lat || !data.lon) {
+        return;
+    }
+    
+    const container = document.getElementById('map-container');
+    container.style.display = 'block';
+    
+    // Initialize map if not already created
+    if (!map) {
+        map = L.map('map').setView([data.lat, data.lon], 16);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors',
+            maxZoom: 19
+        }).addTo(map);
+        
+        // Add marker with custom icon
+        const carIcon = L.divIcon({
+            className: 'car-marker',
+            html: '🤖',
+            iconSize: [30, 30]
+        });
+        marker = L.marker([data.lat, data.lon], { icon: carIcon }).addTo(map);
+    } else {
+        // Update existing marker position
+        marker.setLatLng([data.lat, data.lon]);
+        map.setView([data.lat, data.lon]);
+    }
+    
+    // Update location info text
+    document.getElementById('location-coords').textContent = 
+        `${data.lat.toFixed(6)}, ${data.lon.toFixed(6)}`;
+    
+    if (data.acc) {
+        document.getElementById('location-accuracy').textContent = `±${Math.round(data.acc)}m`;
+    }
+    
+    if (data.batt !== null && data.batt !== undefined) {
+        document.getElementById('phone-battery').textContent = `🔋 ${data.batt}%`;
+    }
+    
+    // Update GPS status indicator
+    updateGPSStatus(true);
+    
+    // Reset GPS timeout - mark as disconnected if no update for 2 minutes
+    if (gpsTimeout) {
+        clearTimeout(gpsTimeout);
+    }
+    gpsTimeout = setTimeout(() => {
+        updateGPSStatus(false);
+        console.log('GPS connection timeout - no updates received');
+    }, 120000); // 2 minutes
 }
 
 function showError(message) {

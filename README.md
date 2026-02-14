@@ -8,6 +8,8 @@ A web-based remote control system for a LEGO Mindstorms NXT robot car with live 
 - **Responsive Controls**: Keyboard (WASD/arrows) and on-screen buttons
 - **Tank Drive Control**: Differential steering with two motors
 - **Distance Sensing**: Real-time ultrasonic sensor readings
+- **GPS Location Tracking**: Real-time map showing robot location via OwnTracks
+- **Status Indicators**: Visual connection status for Camera, NXT, GPS, and Server
 - **Low Latency**: WebSocket-based communication for responsive control
 - **Secure Remote Access**: Cloudflare Tunnels with Zero Trust authentication
 - **Mobile Friendly**: Touch-optimized controls for phones and tablets
@@ -102,7 +104,12 @@ source venv/bin/activate
 python app.py
 ```
 
-The server will start on `http://0.0.0.0:5000`
+The server will start on `http://0.0.0.0:5000` by default.
+
+**Custom Port**: Use the `PORT` environment variable to change the port:
+```bash
+PORT=8080 python app.py
+```
 
 ### Access Web Interface
 
@@ -187,6 +194,26 @@ Now when anyone accesses your tunnel URL, they'll need to authenticate first!
 
 The ultrasonic sensor reading appears in the top-right corner of the video feed, showing distance to obstacles in centimeters.
 
+### GPS Location Tracking
+
+The web interface shows a live map with the robot's location when using OwnTracks on an iPhone:
+
+1. **Install OwnTracks** app on iPhone (free from App Store)
+2. **Configure** to send location to: `http://<pi-ip>:5000/api/location`
+3. **View Map** on the web interface showing real-time robot position
+
+📖 **See [OWNTRACKS_SETUP.md](OWNTRACKS_SETUP.md) for detailed setup instructions**
+
+The map displays:
+- Robot position with 🤖 marker
+- GPS coordinates
+- Location accuracy
+- iPhone battery level
+
+**Status Monitoring**: The GPS indicator in the top status bar shows:
+- 🟢 Green: Location updates being received
+- 🔴 Red: No location data or timeout (no updates for 2 minutes)
+
 ## 🔧 Configuration
 
 ### Motor Configuration
@@ -207,18 +234,22 @@ Edit `app.py` to adjust camera parameters:
 
 ```python
 camera = Camera(
+```python
+camera = Camera(
     camera_index=0,    # Camera device (0 = first camera)
-    width=640,         # Resolution width
-    height=480,        # Resolution height
-    fps=15,            # Frames per second
-    jpeg_quality=60    # JPEG compression (0-100)
+    width=320,         # Resolution width (optimized for Pi 3)
+    height=240,        # Resolution height (optimized for Pi 3)
+    fps=10,            # Frames per second (optimized for Pi 3)
+    jpeg_quality=50    # JPEG compression (0-100, lower = faster)
 )
 ```
 
-**Performance Tips for Raspberry Pi 3**:
-- Lower resolution (e.g., 320x240) for faster performance
-- Reduce FPS to 10-12 if CPU usage is high
-- Lower JPEG quality to 50 for reduced bandwidth
+**Performance Tips**:
+- **Default settings (320x240 @ 10fps)** work well on Raspberry Pi 3
+- **Raspberry Pi 4/5**: Can increase to 640x480 @ 15-20fps
+- **Very slow FPS**: Reduce resolution to 160x120 or lower quality to 40
+- **Better quality needed**: Increase resolution but reduce fps to 8
+- **Network streaming**: Lower jpeg_quality (40-50) reduces bandwidth
 
 ## 🐛 Troubleshooting
 
@@ -242,6 +273,45 @@ camera = Camera(
 - Test with: `v4l2-ctl --list-devices`
 - Try different camera_index (0, 1, 2, etc.)
 - Some cameras may need additional drivers
+
+### Low FPS / Choppy Video
+
+**Problem**: Video stream is slow or choppy on Raspberry Pi
+
+**Solutions**:
+1. **Reduce resolution** in `app.py`:
+   ```python
+   width=320, height=240  # Or even 160x120 for very low-end systems
+   ```
+
+2. **Lower FPS target**:
+   ```python
+   fps=8  # Reduces CPU load
+   ```
+
+3. **Decrease JPEG quality**:
+   ```python
+   jpeg_quality=40  # Lower = less CPU/bandwidth
+   ```
+
+4. **Check CPU usage**:
+   ```bash
+   top  # Look for python process CPU %
+   ```
+
+5. **Close other applications** on the Pi
+
+6. **Check camera capabilities**:
+   ```bash
+   v4l2-ctl --list-formats-ext -d /dev/video0
+   # Use a resolution/format your camera supports natively
+   ```
+
+7. **Disable camera auto-settings** (edit `camera.py`):
+   ```python
+   self.capture.set(cv2.CAP_PROP_AUTO_EXPOSURE, 0)
+   self.capture.set(cv2.CAP_PROP_AUTOFOCUS, 0)
+   ```
 
 ### High CPU Usage
 
@@ -288,6 +358,7 @@ nxt-camera/
 ├── setup_udev.sh            # NXT USB access setup
 ├── setup_tunnel.sh          # Cloudflare Tunnel setup
 ├── cloudflared-config.yml   # Cloudflare config template
+├── OWNTRACKS_SETUP.md       # GPS tracking setup guide
 ├── templates/
 │   └── index.html           # Web interface
 ├── static/
@@ -346,6 +417,7 @@ Contributions welcome! Areas for improvement:
 - [Flask Documentation](https://flask.palletsprojects.com/)
 - [Cloudflare Tunnels](https://developers.cloudflare.com/cloudflare-one/connections/connect-apps/)
 - [Cloudflare Access](https://developers.cloudflare.com/cloudflare-one/policies/access/)
+- [OwnTracks](https://owntracks.org/) - Location tracking app
 
 ## 💡 Tips
 
@@ -355,6 +427,7 @@ Contributions welcome! Areas for improvement:
 4. **Battery life** - NXT uses AA batteries, keep spares handy
 5. **Add LEDs** or sound to indicate connection status on robot
 6. **Consider a killswitch** for emergency stops
+7. **GPS tracking** - Use OwnTracks on iPhone hotspot to see robot location on map
 
 ## 🎓 Educational Use
 

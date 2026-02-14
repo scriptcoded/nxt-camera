@@ -3,8 +3,10 @@ Flask Web Application for NXT Camera Car
 Streams USB camera feed and controls LEGO Mindstorms NXT via web interface.
 """
 import logging
+import os
 import time
-from flask import Flask, render_template, Response
+from datetime import datetime
+from flask import Flask, render_template, Response, request, jsonify
 from flask_socketio import SocketIO, emit
 
 from camera import Camera
@@ -26,6 +28,17 @@ socketio = SocketIO(app, async_mode='threading', cors_allowed_origins='*')
 camera = None
 nxt = None
 
+# GPS location from OwnTracks
+location = {
+    'lat': None,
+    'lon': None,
+    'acc': None,  # accuracy in meters
+    'alt': None,  # altitude
+    'vel': None,  # velocity
+    'batt': None, # battery percentage
+    'timestamp': None
+}
+
 
 def init_hardware():
     """Initialize camera and NXT controller."""
@@ -37,10 +50,10 @@ def init_hardware():
     try:
         camera = Camera(
             camera_index=0,
-            width=640,
-            height=480,
-            fps=15,
-            jpeg_quality=60
+            width=320,
+            height=240,
+            fps=10,
+            jpeg_quality=50
         )
         if camera.is_connected():
             logger.info("Camera initialized successfully")
@@ -93,6 +106,40 @@ def video_feed():
         return "Camera not available", 503
 
 
+@app.route('/api/location', methods=['POST'])
+def receive_location():
+    """Receive location updates from OwnTracks."""
+    global location
+    
+    data = request.get_json()
+    
+    # OwnTracks sends _type: "location" for position updates
+    if data and data.get('_type') == 'location':
+        location = {
+            'lat': data.get('lat'),
+            'lon': data.get('lon'),
+            'acc': data.get('acc'),
+            'alt': data.get('alt'),
+            'vel': data.get('vel'),
+            'batt': data.get('batt'),
+            'timestamp': datetime.now().isoformat()
+        }
+        logger.info(f"Location updated: {location['lat']}, {location['lon']} (±{location['acc']}m)")
+        
+        # Broadcast to all connected clients
+        socketio.emit('location', location)
+        
+        return jsonify({'status': 'ok'})
+    
+    return jsonify({'status': 'ignored'}), 200
+
+
+@app.route('/api/location', methods=['GET'])
+def get_location():
+    """Get current location."""
+    return jsonify(location)
+
+
 @socketio.on('connect')
 def handle_connect():
     """Handle client connection."""
@@ -103,6 +150,10 @@ def handle_connect():
         'camera': camera.is_connected() if camera else False,
         'nxt': nxt.is_connected() if nxt else False
     })
+    
+    # Send current location if available
+    if location['lat'] is not None:
+        emit('location', location)
 
 
 @socketio.on('disconnect')
@@ -187,6 +238,9 @@ def cleanup():
 
 if __name__ == '__main__':
     try:
+        # Get port from environment variable or default to 5000
+        port = int(os.getenv('PORT', 5000))
+        
         # Initialize hardware
         init_hardware()
         
@@ -194,8 +248,8 @@ if __name__ == '__main__':
         socketio.start_background_task(distance_monitor)
         
         # Run Flask app
-        logger.info("Starting Flask server on 0.0.0.0:5000")
-        socketio.run(app, host='0.0.0.0', port=5000, debug=False)
+        logger.info(f"Starting Flask server on 0.0.0.0:{port}")
+        socketio.run(app, host='0.0.0.0', port=port, debug=False)
         
     except KeyboardInterrupt:
         logger.info("Received shutdown signal")
